@@ -79,7 +79,7 @@ class itr_Net(pl.LightningModule):
     def validation_epoch_end(self, outputs):
         self.epoch += 1
         current_epoch = self.epoch - 1
-        self.avg_val_acc += self.eval_acc / len(eval_loader)
+        self.avg_val_acc = self.eval_acc / len(eval_loader)
         self.avg_val_loss = self.eval_loss / len(eval_loader)
 
         self.avg_train_loss = self.train_loss / len(train_loader)
@@ -89,10 +89,15 @@ class itr_Net(pl.LightningModule):
         for weights in self.parameters():
             writer.add_histogram('Weights', weights, current_epoch)
 
+        self.train_loss = 0
+        self.eval_acc = 0
+        self.eval_loss = 0
+
         tensorboard_logs = {'avg_valid_loss': self.avg_val_loss, 'avg_valid_acc': self.avg_val_acc,
                             'avg_train_loss': self.avg_train_loss}
         return {'avg_valid_loss': self.avg_val_loss, 'avg_valid_acc': self.avg_val_acc,
                 'avg_train_loss': self.avg_train_loss, 'logs': tensorboard_logs}
+
 
 
 
