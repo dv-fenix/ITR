@@ -71,10 +71,10 @@ class itr_Net(pl.LightningModule):
         # normalize loss by dividing by total iterations
         norm_loss = total_loss / len(decoder_arr[0])
         # convert to tensor[final sentence in array]
-        logits_tensor = torch.FloatTensor(final_sent_logits)
+        logits_tensor = torch.FloatTensor(final_sent_logits) #dimension: [sequence length - 1, batch_size, sequence_length, vocab_size]
 
-        self.loss = norm_loss
-        self.logits = logits_tensor #dimension: [sequence length - 1, batch_size, sequence_length, vocab_size]
+        #self.loss = norm_loss
+        #self.logits = logits_tensor
 
         return norm_loss, logits_tensor
 
@@ -120,11 +120,16 @@ class itr_Net(pl.LightningModule):
         with torch.no_grad():
             loss, logits = self.forward(source, target)
         self.eval_loss += loss
-        logits = logits.detach().cpu().numpy()
-        label_ids = target.to('cpu').numpy()
+        logits = logits.cpu().numpy()
+        label_ids = target.cpu().numpy()
+        eval_accuracy = 0
 
-        tmp_eval_accuracy = flat_accuracy(logits, label_ids)
+        for i, item in enumerate(logits):
+            eval_accuracy = eval_accuracy + flat_accuracy(item, label_ids)
+
+        tmp_eval_accuracy = eval_accuracy / logits.shape[0]
         self.eval_acc += tmp_eval_accuracy
+        
         tensorboard_logs = {'eval_loss': self.eval_loss, 'eval_acc': self.eval_acc}
 
         return {'eval_loss': self.eval_loss, 'eval_acc': self.eval_acc, 'logs': tensorboard_logs}
