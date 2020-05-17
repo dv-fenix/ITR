@@ -27,7 +27,19 @@ def gen_model_loaders(config):
 
 
 def flat_accuracy(preds, labels):
+    '''
     pred_flat = np.argmax(preds, axis=2).flatten()
+    '''
+    pred_int = np.argmax(preds, axis=3)
+    pred = []
+    for i in range(pred_int.shape[0]):
+        if i == 0:
+            temp = np.zeros_like(pred_int[i, :, i])
+            temp[:] = 100
+            pred.append(temp)
+        pred.append(pred_int[i, :, i+1])
+    pred = np.array(pred)
+    pred_flat = np.transpose(pred).flatten()
     labels_flat = labels.flatten()
     #print (f'preds: {pred_flat}')
     #print (f'labels: {labels_flat}')
