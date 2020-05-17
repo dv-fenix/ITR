@@ -122,6 +122,7 @@ class itr_Net(pl.LightningModule):
         self.eval_loss += loss
         logits = logits.cpu().numpy()
         label_ids = target.cpu().numpy()
+        '''
         eval_accuracy = 0
 
         for i, item in enumerate(logits):
@@ -129,7 +130,11 @@ class itr_Net(pl.LightningModule):
 
         tmp_eval_accuracy = eval_accuracy / logits.shape[0]
         self.eval_acc += tmp_eval_accuracy
-        
+        '''
+
+        tmp_eval_accuracy = flat_accuracy(logits, label_ids)
+        self.eval_acc += tmp_eval_accuracy
+
         tensorboard_logs = {'eval_loss': self.eval_loss, 'eval_acc': self.eval_acc}
 
         return {'eval_loss': self.eval_loss, 'eval_acc': self.eval_acc, 'logs': tensorboard_logs}
