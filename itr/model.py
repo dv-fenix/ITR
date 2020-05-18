@@ -21,6 +21,7 @@ class itr_Net(pl.LightningModule):
         self.avg_val_acc = 0
         self.epoch = 0
         self.eval_steps = 0
+        self.train_loader, self.eval_loader = gen_model_loaders(self.config)
 
     def forward(self, encoder_input_ids, decoder_input_ids, testing=False):
 
@@ -59,9 +60,9 @@ class itr_Net(pl.LightningModule):
             label_ids = np.array(label_ids)  # convert to array
             label_tensor = torch.tensor(label_ids).to('cuda')  ##update tensor at each step
 
-            loss, logits = self.decoder(decoder_input_ids,
+            loss, logits = self.decoder(label_tensor,
                                         encoder_hidden_states=encoder_hidden_states,
-                                        lm_labels=label_tensor)
+                                        lm_labels=decoder_input_ids)
 
             logits_arr = logits.cpu().tolist()
             # iteratively adds word logits
@@ -94,10 +95,10 @@ class itr_Net(pl.LightningModule):
         return pad_sequence
 
     def train_dataloader(self):
-        return train_loader
+        return self.train_loader
 
     def val_dataloader(self):
-        return eval_loader
+        return self.eval_loader
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.config.lr)
